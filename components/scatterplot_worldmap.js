@@ -183,7 +183,7 @@ class ScatterplotMap {
 
     // this method will be called each time the brush is updated.
     brushCircles(event) {
-        let selection = event.selection;
+        let {selection} = event;
 
         this.circles.classed("brushed", d => this.isBrushed(d, selection));
 
