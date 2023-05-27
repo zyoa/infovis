@@ -12,8 +12,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
     <script src="https://unpkg.com/@popperjs/core@2"></script>
 
-
     <script src="components/scatterplot.js"></script>
+    <script src="components/scatterplot_worldmap.js"></script>
     <script src="components/histogram.js"></script>
     <script src="components/pc.js"></script>
     <script src="components/datatable.js"></script>
@@ -27,14 +27,13 @@
         }
 
         .container {
-            width: 800px;
+            width: 1280px;
             background: white;
         }
 
         .brushed {
             stroke-width: 1;
             stroke: gray;
-            r: 5;
         }
     </style>
 </head>
@@ -94,6 +93,7 @@
                 </div>
             </div>
         </div>
+
         <div class="row">
             <div class="col offset-1">
                 <div class="form-check form-switch">
@@ -102,8 +102,14 @@
                 </div>
             </div>
         </div>
+
         <div class="text-center">
-            <svg width="400" height="400" id="scatterplot">
+            <div>
+                <input id="brush" type="checkbox"> brush
+                <input type="button" value="Reset" onclick="scatterplotMap.resetZoom()">
+            </div>
+
+            <svg width="1200" height="600" id="scatterplot">
             </svg>
             <div class="tooltip bs-tooltip-top show" id="sc-tooltip" role="tooltip" style="display:none">
                 <div class="tooltip-arrow"></div>
@@ -116,12 +122,12 @@
             </svg>
         </div>
 
-        <div class="text-center">
+        <!-- <div class="text-center">
             <svg id="pc">
             </svg>
-        </div>
+        </div> -->
 
-        <table class="table table-striped text-center">
+        <!-- <table class="table table-striped text-center">
             <thead>
                 <tr>
                     <th>Petal Length</th>
@@ -134,18 +140,25 @@
             <tbody id="data-table">
 
             </tbody>
-        </table>
+        </table> -->
 
     </main>
 
     <script>
-        let data, brushedData, scatterplot, histogram, pc, dataTable;
+        let data, brushedData, scatterplotMap, histogram, pc, dataTable;
 
+        function updateScatterplotMap() {
+            let xVar = "longitude";
+            let yVar = "latitude";
+            let useColor = d3.select("#use-color").property("checked");
+            scatterplotMap.update(xVar, yVar, "variety", useColor);
+        }
+        
         function updateScatterplot() {
             let xVar = d3.select("input[type=radio][name=x-encoding]:checked").property("value");
             let yVar = d3.select("input[type=radio][name=y-encoding]:checked").property("value");
             let useColor = d3.select("#use-color").property("checked");
-            scatterplot.update(xVar, yVar, "variety", useColor);
+            scatterplotMap.update(xVar, yVar, "variety", useColor);
         }
 
         function updateHistogram() {
@@ -163,48 +176,68 @@
         d3.csv("https://raw.githubusercontent.com/zyoa/infovis/main/query.csv")
             .then(csvData => {
                 csvData.forEach(d => {
-                    d["petal.length"] = +d["petal.length"];
-                    d["petal.width"] = +d["petal.width"];
-                    d["sepal.length"] = +d["sepal.length"];
-                    d["sepal.width"] = +d["sepal.width"];
+                    d["latitude"] = +d["latitude"];
+                    d["longitude"] = +d["longitude"];
+                    d["depth"] = +d["depth"];
+                    d["depthError"] = +d["depthError"];
+                    d["mag"] = +d["mag"];
+                    d["magError"] = +d["magError"];
+                    d["magNst"] = +d["magNst"];
+                    d["horizontalError"] = +d["horizontalError"];
+                    d["dmin"] = +d["dmin"];
+                    d["gap"] = +d["gap"];
+                    d["nst"] = +d["nst"];
+                    d["rms"] = +d["rms"];
                 });
 
                 data = csvData;
 
-                scatterplot = new Scatterplot("#scatterplot", "#sc-tooltip", data);
-                scatterplot.initialize();
+                scatterplotMap = new ScatterplotMap("#scatterplot", "#sc-tooltip", data, 1200, 600);
+                scatterplotMap.initialize();
+                updateScatterplotMap();
+                scatterplotMap.resetZoom();
 
-                updateScatterplot();
-                d3.selectAll("input[type=radio][name=x-encoding]").on("change", updateScatterplot);
-                d3.selectAll("input[type=radio][name=y-encoding]").on("change", updateScatterplot);
-                d3.selectAll("#use-color").on("change", updateScatterplot);
+                // https://codepen.io/yappynoppy/pen/PgzLJM
+                var checkbox = document.querySelector("#brush");
+                checkbox.addEventListener("change", function() {
+                    if (this.checked) {
+                        scatterplotMap.start_brush_tool(); // Checkbox is checked..
+                    } else {
+                        scatterplotMap.end_brush_tool(); // Checkbox is not checked..
+                    }
+                });
 
-                scatterplot.on("brush", (brushedItems) => {
+                scatterplotMap.on("brush", (brushedItems) => {
                     brushedData = brushedItems;
                     updateHistogram();
                     updatePC();
-                    updateDataTable();
+                    // updateDataTable();
                 });
+
+
+                // d3.selectAll("input[type=radio][name=x-encoding]").on("change", updateScatterplot);
+                // d3.selectAll("input[type=radio][name=y-encoding]").on("change", updateScatterplot);
+                // d3.selectAll("#use-color").on("change", updateScatterplot);
+
 
                 histogram = new Histogram("#histogram");
                 histogram.initialize();
-
                 updateHistogram();
 
-                pc = new PC("#pc", data, ["petal.length", "petal.width", "sepal.length", "sepal.width"]);
-                pc.initialize();
+                // pc = new PC("#pc", data, ["petal.length", "petal.width", "sepal.length", "sepal.width"]);
+                // pc.initialize();
 
-                updatePC();
+                // updatePC();
 
-                dataTable = new DataTable("#data-table");
+                // dataTable = new DataTable("#data-table");
 
-                updateDataTable();
+                // updateDataTable();
             })
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-        crossorigin="anonymous"></script>
+        crossorigin="anonymous"></script> -->
 </body>
 
 </html>
