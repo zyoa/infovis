@@ -134,7 +134,7 @@
     <header>
         <nav class="my_header navbar navbar-light bg-light">
             <div class="container-fluid">
-                <span class="navbar-brand mb-0 h1" style="margin: 0 auto">World Earthquake Statistics - Visualization (2023711964 장지호)
+                <span class="navbar-brand mb-0 h1" style="margin: 0 auto">World Earthquake Statistics - Visualization
         </nav>
 
     </header>
@@ -304,8 +304,12 @@
         // }
 
         function updateDataTable() {
-            if(brushedData)
-                dataTable.update(brushedData, data.columns)
+            if (brushedData && brushedData.length > 0) {
+                dataTable.update(brushedData.slice(0, 100), data.columns);
+            }
+            else {
+                dataTable.update(0, 0)
+            }
         }
 
         function filterData() {
@@ -318,6 +322,8 @@
             updateHistogram();
 
             updateScatterplot()
+
+            updateDataTable()
         }
 
         function mapReset() {
@@ -333,9 +339,11 @@
             scatterplotMap.resetZoomBrush()
             updateScatterplotMap()
 
+            updateHistogram()
+
             updateScatterplot()
 
-            updateHistogram()
+            updateDataTable()
         }
 
         // https://medium.com/@predragdavidovic10/native-dual-range-slider-html-css-javascript-91e778134816

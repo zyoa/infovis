@@ -94,6 +94,7 @@ class Scatterplot {
                 .style("font-size", "16px")
                 .call(d3.legendColor()
                 .scale(this.zScale)
+                .cells(5)
                 .orient('vertical'))
         }
         else {
