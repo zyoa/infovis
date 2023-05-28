@@ -189,18 +189,18 @@
         <!-- https://medium.com/@predragdavidovic10/native-dual-range-slider-html-css-javascript-91e778134816 -->
         <div style="width: 500px; margin: 30px auto; align-items: center;">
             <div class="sliders_control">
-                <input id="fromSlider" type="range" value="2" min="1" max="9" step="0.1" />
-                <input id="toSlider" type="range" value="8" min="1" max="9" step="0.1" />
+                <input id="fromSlider" type="range" value="2.5" min="1" max="9" step="0.1" />
+                <input id="toSlider" type="range" value="7.8" min="1" max="9" step="0.1" />
             </div>
             <div class="form_control">
                 <div class="form_control_container">
                     <div class="form_control_container__time">Min</div>
-                    <input class="form_control_container__time__input" type="number" id="fromInput" value="2"
+                    <input class="form_control_container__time__input" type="number" id="fromInput" value="2.5"
                         min="1" max="9" step="0.1" />
                 </div>
                 <div class="form_control_container">
                     <div class="form_control_container__time">Max</div>
-                    <input class="form_control_container__time__input" type="number" id="toInput" value="8"
+                    <input class="form_control_container__time__input" type="number" id="toInput" value="7.8"
                         min="1" max="9" step="0.1" />
                 </div>
             </div>
@@ -258,6 +258,8 @@
         }
 
         function updateHistogram() {
+            console.log(brushedData)
+            console.log(brushedData && brushedData.length > 0)
             histogram.update(brushedData && brushedData.length > 0 ? brushedData : filteredData, "mag");
         }
 
@@ -279,20 +281,20 @@
         }
 
         function mapReset() {
-            fromInput.value = 2
-            toInput.value = 8
+            fromInput.value = 2.5
+            toInput.value = 7.8
 
             controlFromInput(fromSlider, fromInput, toInput, toSlider)
             controlToInput(toSlider, fromInput, toInput, toSlider)
 
             filteredData = data
+            brushedData = null
 
             scatterplotMap.resetZoomBrush()
             updateScatterplotMap()
 
             updateHistogram()
         }
-
 
         // https://medium.com/@predragdavidovic10/native-dual-range-slider-html-css-javascript-91e778134816
         const fromSlider = document.querySelector('#fromSlider');

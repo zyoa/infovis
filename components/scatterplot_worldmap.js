@@ -141,10 +141,7 @@ class ScatterplotMap {
         )
 
         this.circles.classed("brushed", false)
-        if (this.handlers.brush) {
-            this.handlers.brush(this.data);
-        }
-
+        
         if (this.brushOn) {
             this.svg.selectAll("g.brush").remove()
 
