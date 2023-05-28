@@ -1,6 +1,6 @@
 class Histogram {
     margin = {
-        top: 50, right: 10, bottom: 40, left: 40
+        top: 50, right: 10, bottom: 50, left: 40
     }
 
     constructor(svg, width = 250, height = 300) {
@@ -26,10 +26,17 @@ class Histogram {
 
         this.container.attr("transform", `translate(${this.margin.left}, ${this.margin.top})`);
 
+        this.svg.append("text")
+            .attr("class", "histogram-title")
+            .attr("x", this.width / 2 + this.margin.left)
+            .attr("y", this.margin.top + this.height + this.margin.bottom - 10)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "20px")
+            .text(`Magnitude`);
     }
 
     update(data, xVar) {
-        const categories = [...new Set(data.map(d => Math.floor(d[xVar])))].sort()
+        const categories = Array.from({ length: 8 }, (_, i) => i + 1);
         const counts = {}
 
         categories.forEach(c => {
@@ -43,6 +50,8 @@ class Histogram {
             .data(categories)
             .join("rect")
             .attr("x", d => this.xScale(d) + this.xScale.bandwidth() / 2)
+            .transition()
+            .duration(500)
             .attr("y", d => this.yScale(counts[d]))
             .attr("width", this.xScale.bandwidth())
             .attr("height", d => this.height - this.yScale(counts[d]))
@@ -51,29 +60,27 @@ class Histogram {
         this.container.selectAll(".bar-label")
             .data(categories)
             .join("text")
+            .attr("text-anchor", "middle")
+            .attr("font-size", "14px")
+            .attr("fill", "black")
             .attr("class", "bar-label")
             .attr("x", d => this.xScale(d) + this.xScale.bandwidth())
+            .transition()
+            .duration(500)
             .attr("y", d => this.yScale(counts[d]) - 5)
             .text(d => counts[d])
-            .attr("text-anchor", "middle")
-            .attr("font-size", "11px")
-            .attr("fill", "black")
 
         this.xAxis
             .attr("transform", `translate(${this.margin.left}, ${this.margin.top + this.height})`)
-            .call(d3.axisBottom(this.xScale));
+            .call(d3.axisBottom(this.xScale))
+            .attr("font-size", "13px");
 
         this.yAxis
             .attr("transform", `translate(${this.margin.left}, ${this.margin.top})`)
-            .call(d3.axisLeft(this.yScale));
-
-        this.svg.append("text")
-            .attr("class", "histogram-title")
-            .attr("x", this.width / 2 + this.margin.left)
-            .attr("y", this.margin.top + this.height + this.margin.bottom - 5)
-            .attr("text-anchor", "middle")
-            .attr("font-size", "13px")
-            .text(`${xVar}`);
+            .transition()
+            .duration(500)
+            .call(d3.axisLeft(this.yScale))
+            .attr("font-size", "13px");
 
         this.container.selectAll(".total-count").remove();
         this.container.append("text")
@@ -81,7 +88,7 @@ class Histogram {
             .attr("x", this.width)
             .attr("y", -20)
             .attr("text-anchor", "end")
-            .attr("font-size", "11px")
+            .attr("font-size", "16px")
             .text(`Total Count: ${d3.sum(Object.values(counts))}`);
     }
 }

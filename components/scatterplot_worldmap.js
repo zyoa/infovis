@@ -141,7 +141,7 @@ class ScatterplotMap {
         )
 
         this.circles.classed("brushed", false)
-        
+
         if (this.brushOn) {
             this.svg.selectAll("g.brush").remove()
 
@@ -204,7 +204,7 @@ class ScatterplotMap {
             .attr("cy", d => this.yScale(d["latitude"]))
             .attr("fill", d => this.zScale(d["mag"]))
             .attr("r", 2)
-            .attr("opacity", 0.7)
+            .attr("opacity", 0.8)
     }
 
     isBrushed(d, selection) {

@@ -25,10 +25,19 @@
         body {
             background: #eee;
             overflow-y: scroll;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
         }
 
-        .container {
-            width: 1280px;
+        .my_header {
+            width: 1920px;
+            display: flex;
+        }
+        
+        .my_container {
+            width: 1920px;
+            height: 1080px;
             background: white;
         }
 
@@ -46,6 +55,7 @@
 
         .sliders_control {
             position: relative;
+            margin-top: 20px;
             min-height: 20px;
         }
 
@@ -119,14 +129,14 @@
 
 <body>
     <header>
-        <nav class="container navbar navbar-light bg-light">
+        <nav class="my_header navbar navbar-light bg-light">
             <div class="container-fluid">
-                <span class="navbar-brand mb-0 h1">World Earthquake Statistics - Visualization (2023711964 장지호)
+                <span class="navbar-brand mb-0 h1" style="margin: 0 auto">World Earthquake Statistics - Visualization (2023711964 장지호)
         </nav>
 
     </header>
 
-    <main class="container pb-3">
+    <main class="my_container pb-3">
         <!-- <div class="row pt-2">
             <div class="col-1 text-end pe-2"><strong>X:</strong></div>
             <div class="col-11">
@@ -181,33 +191,42 @@
             </div>
         </div> -->
 
-        <div class="text-center" style="padding-top: 10px;">
-            <input id="brush" type="checkbox"> Brush on (Zoom off)
-            <input type="button" value="Reset" style="margin-left: 220px;" onclick="mapReset()">
+        <div style="display: flex;">
+            <div style="width: 500px; margin-top: 20px; margin-left: 100px; align-items: center;">
+                <div class="form_control">
+                    <div class="form_control_container">
+                        <div class="form_control_container__time">Min</div>
+                        <input class="form_control_container__time__input" type="number" id="fromInput" value="2.5"
+                            min="1" max="9" step="0.1" />
+                    </div>
+                    <div class="form_control_container">
+                        <div class="form_control_container__time">Max</div>
+                        <input class="form_control_container__time__input" type="number" id="toInput" value="7.8"
+                            min="1" max="9" step="0.1" />
+                    </div>
+                </div>
+                <div class="sliders_control">
+                    <input id="fromSlider" type="range" value="2.5" min="1" max="9" step="0.1" />
+                    <input id="toSlider" type="range" value="7.8" min="1" max="9" step="0.1" />
+                </div>
+            </div>
+            
+            <div>
+                <div style="margin-top: 70px; margin-left: 205px;">
+                    <input id="brush" type="checkbox"> Brush on (Zoom off)
+                    <input type="button" value="Reset" style="margin-left: 220px;" onclick="mapReset()">
+                </div>
+            </div>
+        
         </div>
-
         <!-- https://medium.com/@predragdavidovic10/native-dual-range-slider-html-css-javascript-91e778134816 -->
-        <div style="width: 500px; margin: 30px auto; align-items: center;">
-            <div class="sliders_control">
-                <input id="fromSlider" type="range" value="2.5" min="1" max="9" step="0.1" />
-                <input id="toSlider" type="range" value="7.8" min="1" max="9" step="0.1" />
-            </div>
-            <div class="form_control">
-                <div class="form_control_container">
-                    <div class="form_control_container__time">Min</div>
-                    <input class="form_control_container__time__input" type="number" id="fromInput" value="2.5"
-                        min="1" max="9" step="0.1" />
-                </div>
-                <div class="form_control_container">
-                    <div class="form_control_container__time">Max</div>
-                    <input class="form_control_container__time__input" type="number" id="toInput" value="7.8"
-                        min="1" max="9" step="0.1" />
-                </div>
-            </div>
+
+
+        <div class="text-center">
+            <svg width="1200" height="600" id="scatterplotMap" style="margin-top: -20px;"></svg>
+            <svg width="600" height="600" id="histogram" style="margin-left: 30px"></svg>
         </div>
 
-        <svg width="1200" height="600" id="scatterplot">
-        </svg>
         <div class="tooltip bs-tooltip-top show" id="sc-tooltip" role="tooltip" style="display:none">
             <div class="tooltip-arrow"></div>
             <div class="tooltip-inner">
@@ -216,10 +235,6 @@
         </div>
         </div>
 
-        <div class="text-center">
-            <svg width="400" height="400" id="histogram">
-            </svg>
-        </div>
 
         <!-- <div class="text-center">
             <svg id="pc">
@@ -250,17 +265,15 @@
             scatterplotMap.update(filteredData);
         }
 
+        function updateHistogram() {
+            histogram.update(brushedData && brushedData.length > 0 ? brushedData : filteredData, "mag");
+        }
+        
         function updateScatterplot() {
             let xVar = d3.select("input[type=radio][name=x-encoding]:checked").property("value");
             let yVar = d3.select("input[type=radio][name=y-encoding]:checked").property("value");
             let useColor = d3.select("#use-color").property("checked");
             scatterplotMap.update(xVar, yVar, "variety", useColor);
-        }
-
-        function updateHistogram() {
-            console.log(brushedData)
-            console.log(brushedData && brushedData.length > 0)
-            histogram.update(brushedData && brushedData.length > 0 ? brushedData : filteredData, "mag");
         }
 
         // function updatePC() {
@@ -332,7 +345,7 @@
                 data = csvData;
                 filteredData = data
 
-                scatterplotMap = new ScatterplotMap("#scatterplot", "#sc-tooltip", data, 1200, 600);
+                scatterplotMap = new ScatterplotMap("#scatterplotMap", "#sc-tooltip", data, 1200, 600);
                 scatterplotMap.initialize();
                 updateScatterplotMap(data);
                 scatterplotMap.resetZoomBrush();
@@ -360,12 +373,12 @@
                 });
 
 
-                // d3.selectAll("input[type=radio][name=x-encoding]").on("change", updateScatterplot);
-                // d3.selectAll("input[type=radio][name=y-encoding]").on("change", updateScatterplot);
-                // d3.selectAll("#use-color").on("change", updateScatterplot);
+                d3.selectAll("input[type=radio][name=x-encoding]").on("change", updateScatterplot);
+                d3.selectAll("input[type=radio][name=y-encoding]").on("change", updateScatterplot);
+                d3.selectAll("#use-color").on("change", updateScatterplot);
 
 
-                histogram = new Histogram("#histogram", 200, 300);
+                histogram = new Histogram("#histogram", 450, 550);
                 histogram.initialize();
                 updateHistogram();
 
