@@ -35,19 +35,19 @@ class Histogram {
         categories.forEach(c => {
             counts[c] = data.filter(d => Math.floor(d[xVar]) === c).length;
         })
-        
+
         this.xScale.domain(categories.concat(d3.max(categories) + 1)).range([0, this.width]);
         this.yScale.domain([0, d3.max(Object.values(counts))]).range([this.height, 0]);
 
         this.container.selectAll("rect")
             .data(categories)
             .join("rect")
-            .attr("x", d => this.xScale(d) + this.xScale.bandwidth()/2)
+            .attr("x", d => this.xScale(d) + this.xScale.bandwidth() / 2)
             .attr("y", d => this.yScale(counts[d]))
             .attr("width", this.xScale.bandwidth())
             .attr("height", d => this.height - this.yScale(counts[d]))
-            .attr("fill", "lightblue")
-        
+            .attr("fill", "lightgray")
+
         this.container.selectAll(".bar-label")
             .data(categories)
             .join("text")
@@ -57,7 +57,7 @@ class Histogram {
             .text(d => counts[d])
             .attr("text-anchor", "middle")
             .attr("font-size", "11px")
-            .attr("fill", "black");
+            .attr("fill", "black")
 
         this.xAxis
             .attr("transform", `translate(${this.margin.left}, ${this.margin.top + this.height})`)
@@ -74,5 +74,14 @@ class Histogram {
             .attr("text-anchor", "middle")
             .attr("font-size", "13px")
             .text(`${xVar}`);
+
+        this.container.selectAll(".total-count").remove();
+        this.container.append("text")
+            .attr("class", "total-count")
+            .attr("x", this.width)
+            .attr("y", -20)
+            .attr("text-anchor", "end")
+            .attr("font-size", "11px")
+            .text(`Total Count: ${d3.sum(Object.values(counts))}`);
     }
 }

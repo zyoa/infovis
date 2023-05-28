@@ -17,6 +17,7 @@
     <script src="components/histogram.js"></script>
     <script src="components/pc.js"></script>
     <script src="components/datatable.js"></script>
+    <script src="components/double_slider.js"></script>
 
 
     <title>My Scatterplot</title>
@@ -33,7 +34,85 @@
 
         .brushed {
             stroke-width: 1;
-            stroke: gray;
+            stroke: black;
+        }
+
+        .range_container {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            margin: 100px auto;
+        }
+
+        .sliders_control {
+            position: relative;
+            min-height: 20px;
+        }
+
+        .form_control {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            color: black;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            pointer-events: all;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px #C6C6C6;
+            cursor: pointer;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            pointer-events: all;
+            width: 12px;
+            height: 12px;
+            background-color: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1px #C6C6C6;
+            cursor: pointer;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            background: #f7f7f7;
+        }
+
+        input[type=range]::-webkit-slider-thumb:active {
+            box-shadow: inset 0 0 3px #387bbe, 0 0 9px #387bbe;
+            -webkit-box-shadow: inset 0 0 3px #387bbe, 0 0 9px #387bbe;
+        }
+
+        input[type="number"] {
+            color: black;
+            width: 50px;
+            height: 30px;
+            font-size: 20px;
+            border: none;
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            opacity: 1;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 3px;
+            width: 100%;
+            position: absolute;
+            background-color: #C6C6C6;
+            pointer-events: none;
+        }
+
+        #fromSlider {
+            height: 0;
+            z-index: 1;
         }
     </style>
 </head>
@@ -42,14 +121,13 @@
     <header>
         <nav class="container navbar navbar-light bg-light">
             <div class="container-fluid">
-                <span class="navbar-brand mb-0 h1">My Scatterplot</span>
-            </div>
+                <span class="navbar-brand mb-0 h1">World Earthquake Statistics - Visualization (2023711964 장지호)
         </nav>
 
     </header>
 
     <main class="container pb-3">
-        <div class="row pt-2">
+        <!-- <div class="row pt-2">
             <div class="col-1 text-end pe-2"><strong>X:</strong></div>
             <div class="col-11">
                 <div class="form-check form-check-inline">
@@ -92,32 +170,53 @@
                     <label class="form-check-label" for="y-pw">PetalWidth</label>
                 </div>
             </div>
-        </div>
+        </div> -->
 
-        <div class="row">
+        <!-- <div class="row">
             <div class="col offset-1">
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" role="switch" id="use-color" checked>
                     <label class="form-check-label" for="use-color">Color-encode Class</label>
                 </div>
             </div>
+        </div> -->
+
+        <div class="text-center" style="padding-top: 10px;">
+            <input id="brush" type="checkbox"> Brush on (Zoom off)
+            <input type="button" value="Reset" style="margin-left: 50px;" onclick="scatterplotMap.reset()">
+        </div>
+
+        <!-- https://medium.com/@predragdavidovic10/native-dual-range-slider-html-css-javascript-91e778134816 -->
+        <div style="width: 500px; margin: 20px auto; align-items: center;">
+            <div class="sliders_control">
+                <input id="fromSlider" type="range" value="2" min="1" max="9" step="0.1" />
+                <input id="toSlider" type="range" value="8" min="1" max="9" step="0.1" />
+            </div>
+            <div class="form_control">
+                <div class="form_control_container">
+                    <div class="form_control_container__time">Min</div>
+                    <input class="form_control_container__time__input" type="number" id="fromInput" value="2"
+                        min="1" max="9" step="0.1" />
+                </div>
+                <div class="form_control_container">
+                    <div class="form_control_container__time">Max</div>
+                    <input class="form_control_container__time__input" type="number" id="toInput" value="8"
+                        min="1" max="9" step="0.1" />
+                </div>
+            </div>
+        </div>
+
+        <svg width="1200" height="600" id="scatterplot">
+        </svg>
+        <div class="tooltip bs-tooltip-top show" id="sc-tooltip" role="tooltip" style="display:none">
+            <div class="tooltip-arrow"></div>
+            <div class="tooltip-inner">
+                Some tooltip text!
+            </div>
+        </div>
         </div>
 
         <div class="text-center">
-            <div>
-                <input id="brush" type="checkbox"> brush
-                <input type="button" value="Reset" onclick="scatterplotMap.reset()">
-            </div>
-
-            <svg width="1200" height="600" id="scatterplot">
-            </svg>
-            <div class="tooltip bs-tooltip-top show" id="sc-tooltip" role="tooltip" style="display:none">
-                <div class="tooltip-arrow"></div>
-                <div class="tooltip-inner">
-                    Some tooltip text!
-                </div>
-            </div>
-
             <svg width="400" height="400" id="histogram">
             </svg>
         </div>
@@ -145,14 +244,26 @@
     </main>
 
     <script>
+        const fromSlider = document.querySelector('#fromSlider');
+        const toSlider = document.querySelector('#toSlider');
+        const fromInput = document.querySelector('#fromInput');
+        const toInput = document.querySelector('#toInput');
+        fillSlider(fromSlider, toSlider, '#CCC', '#000', toSlider);
+        setToggleAccessible(toSlider);
+
+        fromSlider.oninput = () => controlFromSlider(fromSlider, toSlider, fromInput);
+        toSlider.oninput = () => controlToSlider(fromSlider, toSlider, toInput);
+        fromInput.oninput = () => controlFromInput(fromSlider, fromInput, toInput, toSlider);
+        toInput.oninput = () => controlToInput(toSlider, fromInput, toInput, toSlider);
+
         let data, brushedData, scatterplotMap, histogram, pc, dataTable;
 
         function updateScatterplotMap() {
             let xVar = "longitude";
             let yVar = "latitude";
-            scatterplotMap.update(xVar, yVar, "mag", true);
+            scatterplotMap.update(data);
         }
-        
+
         function updateScatterplot() {
             let xVar = d3.select("input[type=radio][name=x-encoding]:checked").property("value");
             let yVar = d3.select("input[type=radio][name=y-encoding]:checked").property("value");
@@ -198,7 +309,7 @@
 
                 // https://codepen.io/yappynoppy/pen/PgzLJM
                 var checkbox = document.querySelector("#brush");
-                checkbox.addEventListener("change", function() {
+                checkbox.addEventListener("change", function () {
                     if (this.checked) {
                         scatterplotMap.start_brush_tool(); // Checkbox is checked..
                     } else {

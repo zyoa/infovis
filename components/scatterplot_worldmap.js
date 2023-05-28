@@ -26,23 +26,54 @@ class ScatterplotMap {
         this.yScale = d3.scaleLinear();
         this.zScale = d3.scaleSequential(d3.interpolateRdYlBu);
 
+        this.xScale.domain([-185, 185]).range([0, this.width]);
+        this.yScale.domain([-90, 90]).range([this.height, 0]);
+        this.zScale.domain([6, 2.5]);
+
+        this.legend.append("rect")
+            .attr("x", -11)
+            .attr("y", -26)
+            .attr("width", 64)
+            .attr("height", 174)
+            .attr("fill", "white")
+            .attr("stroke", "gray")
+            .attr("stroke-width", 0.3);
+
+        this.legend.append("text")
+            .attr("x", 20)
+            .attr("y", -8)
+            .text("Mag")
+            .attr("text-anchor", "middle")
+            .attr("font-size", "16px")
+
+        this.legend
+            .attr("transform", `translate(${this.width - 69}, ${172})`)
+            .style("display", "inline")
+            .style("font-size", "12px")
+            .call(d3.legendColor()
+                .scale(this.zScale)
+                .cells(8)
+                .orient('vertical'))
+
+
         // https://d3-graph-gallery.com/graph/backgroundmap_basic.html
         const projection = d3.geoEquirectangular()
             .scale(this.width / (2 * Math.PI))
-            .translate([this.width / 2 , this.height / 2])
+            .translate([this.width / 2, this.height / 2])
 
         d3.json("https://raw.githubusercontent.com/zyoa/infovis/main/world.geojson").then(data => {
             this.map
                 .selectAll("path")
                 .data(data.features)
                 .join("path")
-                    .attr("fill", "#cccc")
-                    .attr("d", d3.geoPath()
-                        .projection(projection)
-                    )
-                    .style("stroke", "#000")
-                    .style("stroke-width", "0.2")
+                .attr("fill", "lightgray")
+                .attr("d", d3.geoPath()
+                    .projection(projection)
+                )
+                .style("stroke", "black")
+                .style("stroke-width", "0.4")
         })
+
 
         // https://observablehq.com/@d3/zoomable-scatterplot
         this.xAxisf = (g, x) => g
@@ -80,9 +111,9 @@ class ScatterplotMap {
 
         this.zoom = d3.zoom()
             .scaleExtent([1, 100])
-            .on("zoom", ({transform}) => {
+            .on("zoom", ({ transform }) => {
                 this.currentZoom = transform
-                
+
                 const zx = transform.rescaleX(this.xScale).interpolate(d3.interpolateRound);
                 const zy = transform.rescaleY(this.yScale).interpolate(d3.interpolateRound);
 
@@ -92,9 +123,10 @@ class ScatterplotMap {
                 this.yAxis.call(this.yAxisf, zy);
                 this.grid.call(this.gridf, zx, zy);
             })
-        
+
         this.svg.call(this.zoom)
-        
+
+
         this.brush = d3.brush()
             .extent([[0, 0], [this.width, this.height]])
             .on("start brush", (event) => {
@@ -104,10 +136,10 @@ class ScatterplotMap {
 
     reset() {
         this.svg.transition().duration(750).call(
-            this.zoom.transform, 
+            this.zoom.transform,
             d3.zoomIdentity
         )
-        
+
         this.circles.classed("brushed", false)
         if (this.handlers.brush) {
             this.handlers.brush(this.data);
@@ -128,26 +160,19 @@ class ScatterplotMap {
         this.svg.selectAll("g.brush").remove()
         this.svg.call(this.zoom)
     }
-    
+
     start_brush_tool() {
         this.brushOn = true
         this.svg.append("g")
             .attr("class", "brush")
             .call(this.brush)
-        
+
         this.svg.on(".zoom", null)
     }
 
-    update(xVar, yVar, colorVar, useColor) {
-        this.xVar = xVar;
-        this.yVar = yVar;
-
-        this.xScale.domain([-185, 185]).range([0, this.width]);
-        this.yScale.domain([-90, 90]).range([this.height, 0]);
-        this.zScale.domain([d3.max(this.data.map(d => d[colorVar])) - 1.5, d3.min(this.data.map(d => d[colorVar]))])
-
+    update(newData) {
         this.circles = this.container.selectAll("circle")
-            .data(data)
+            .data(newData)
             .join("circle")
             .on("mouseover", (e, d) => {
                 this.tooltip.select(".tooltip-inner")
@@ -175,50 +200,35 @@ class ScatterplotMap {
 
         this.circles
             .transition()
-            .attr("cx", d => this.xScale(d[xVar]))
-            .attr("cy", d => this.yScale(d[yVar]))
-            .attr("fill", useColor ? d => this.zScale(d[colorVar]) : "black")
+            .attr("cx", d => this.xScale(d["longitude"]))
+            .attr("cy", d => this.yScale(d["latitude"]))
+            .attr("fill", d => this.zScale(d["mag"]))
             .attr("r", 2)
-            .attr("opacity", 0.6)
-
-        if (useColor) {
-            this.legend
-                .attr("transform", `translate(${this.width - 270}, ${15})`)
-                .style("display", "inline")
-                .style("font-size", "12px")
-                .call(d3.legendColor()
-                    .scale(this.zScale)
-                    .shapeWidth(30)
-                    .cells(8)
-                    .orient('horizontal'))
-        }
-        else {
-            this.legend.style("display", "none");
-        }
+            .attr("opacity", 0.7)
     }
 
     isBrushed(d, selection) {
         let [[x0, y0], [x1, y1]] = selection; // destructuring assignment
-        let x = this.xScale(d[this.xVar]);
-        let y = this.yScale(d[this.yVar]);
+        let x = this.xScale(d["longitude"]);
+        let y = this.yScale(d["latitude"]);
 
         return x0 <= x && x <= x1 && y0 <= y && y <= y1;
     }
 
     // this method will be called each time the brush is updated.
     brushCircles(event) {
-        let {selection} = event;
-        const {x, y, k} = this.currentZoom;
+        let { selection } = event;
+        const { x, y, k } = this.currentZoom;
 
-        const transformedSelection = [
+        const zoomedSelection = [
             [(selection[0][0] - x) / k, (selection[0][1] - y) / k],
             [(selection[1][0] - x) / k, (selection[1][1] - y) / k]
         ];
-        
-        this.circles.classed("brushed", d => this.isBrushed(d, transformedSelection));
-    
+
+        this.circles.classed("brushed", d => this.isBrushed(d, zoomedSelection));
+
         if (this.handlers.brush) {
-            this.handlers.brush(this.data.filter(d => this.isBrushed(d, transformedSelection)));
+            this.handlers.brush(this.data.filter(d => this.isBrushed(d, zoomedSelection)));
         }
     }
 
