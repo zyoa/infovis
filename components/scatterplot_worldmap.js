@@ -24,8 +24,7 @@ class ScatterplotMap {
 
         this.xScale = d3.scaleLinear();
         this.yScale = d3.scaleLinear();
-        this.zScale = d3.scaleOrdinal().range(d3.schemeCategory10);
-
+        this.zScale = d3.scaleSequential(d3.interpolateRdYlBu)
 
         // https://d3-graph-gallery.com/graph/backgroundmap_basic.html
         const projection = d3.geoEquirectangular()
@@ -106,17 +105,21 @@ class ScatterplotMap {
             this.zoom.transform, 
             d3.zoomIdentity
         );
+        this.svg.selectAll("g.brush").remove();
     }
 
     // https://codepen.io/yappynoppy/pen/PgzLJM
     end_brush_tool() {
         this.svg.selectAll("g.brush").remove();
+        this.svg.call(this.zoom);
     }
     
     start_brush_tool() {
         this.svg.append("g")
             .attr("class", "brush")
             .call(this.brush);
+        
+        this.svg.on(".zoom", null);
     }
 
     update(xVar, yVar, colorVar, useColor) {
@@ -125,16 +128,16 @@ class ScatterplotMap {
 
         this.xScale.domain([-185, 185]).range([0, this.width]);
         this.yScale.domain([-90, 90]).range([this.height, 0]);
-        this.zScale.domain([...new Set(this.data.map(d => d[colorVar]))])
-
-        // this.container.call(this.brush);
+        this.zScale.domain([d3.max(this.data.map(d => d[colorVar])) - 1.5, d3.min(this.data.map(d => d[colorVar]))])
 
         this.circles = this.container.selectAll("circle")
             .data(data)
             .join("circle")
             .on("mouseover", (e, d) => {
                 this.tooltip.select(".tooltip-inner")
-                    .html(`Latitude: ${d.latitude}<br />Longitude: ${d.longitude}`);
+                    .html(`Latitude: ${d.latitude}
+                    Longitude: ${d.longitude}
+                    Mag: ${d.mag}`);
 
                 Popper.createPopper(e.target, this.tooltip.node(), {
                     placement: 'top',
@@ -159,14 +162,19 @@ class ScatterplotMap {
             .attr("cx", d => this.xScale(d[xVar]))
             .attr("cy", d => this.yScale(d[yVar]))
             .attr("fill", useColor ? d => this.zScale(d[colorVar]) : "black")
-            .attr("r", 1.5)
+            .attr("r", 2)
+            .attr("opacity", 0.6)
 
         if (useColor) {
             this.legend
+                .attr("transform", `translate(${this.width - 270}, ${15})`)
                 .style("display", "inline")
-                .style("font-size", ".8em")
-                .attr("transform", `translate(${this.width + this.margin.left + 10}, ${this.height / 2})`)
-                .call(d3.legendColor().scale(this.zScale))
+                .style("font-size", "12px")
+                .call(d3.legendColor()
+                    .scale(this.zScale)
+                    .shapeWidth(30)
+                    .cells(8)
+                    .orient('horizontal'))
         }
         else {
             this.legend.style("display", "none");

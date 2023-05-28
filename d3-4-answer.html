@@ -150,8 +150,7 @@
         function updateScatterplotMap() {
             let xVar = "longitude";
             let yVar = "latitude";
-            let useColor = d3.select("#use-color").property("checked");
-            scatterplotMap.update(xVar, yVar, "variety", useColor);
+            scatterplotMap.update(xVar, yVar, "mag", true);
         }
         
         function updateScatterplot() {
@@ -162,7 +161,7 @@
         }
 
         function updateHistogram() {
-            histogram.update(brushedData && brushedData.length > 0 ? brushedData : data, "variety");
+            histogram.update(brushedData && brushedData.length > 0 ? brushedData : data, "mag");
         }
 
         function updatePC() {
@@ -220,7 +219,7 @@
                 // d3.selectAll("#use-color").on("change", updateScatterplot);
 
 
-                histogram = new Histogram("#histogram");
+                histogram = new Histogram("#histogram", 200, 400);
                 histogram.initialize();
                 updateHistogram();
 
