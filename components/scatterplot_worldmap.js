@@ -134,7 +134,7 @@ class ScatterplotMap {
             })
     }
 
-    reset() {
+    resetZoomBrush() {
         this.svg.transition().duration(750).call(
             this.zoom.transform,
             d3.zoomIdentity
@@ -152,6 +152,8 @@ class ScatterplotMap {
                 .attr("class", "brush")
                 .call(this.brush)
         }
+
+        this.zoomedSelection = null
     }
 
     // https://codepen.io/yappynoppy/pen/PgzLJM
@@ -171,6 +173,8 @@ class ScatterplotMap {
     }
 
     update(newData) {
+        this.data = newData
+
         this.circles = this.container.selectAll("circle")
             .data(newData)
             .join("circle")
@@ -199,7 +203,6 @@ class ScatterplotMap {
             });
 
         this.circles
-            .transition()
             .attr("cx", d => this.xScale(d["longitude"]))
             .attr("cy", d => this.yScale(d["latitude"]))
             .attr("fill", d => this.zScale(d["mag"]))
@@ -215,21 +218,29 @@ class ScatterplotMap {
         return x0 <= x && x <= x1 && y0 <= y && y <= y1;
     }
 
+    checkBrush() {
+        if (this.zoomedSelection === null) {
+            return;
+        }
+        
+        this.circles.classed("brushed", d => this.isBrushed(d, this.zoomedSelection));
+
+        if (this.handlers.brush) {
+            this.handlers.brush(this.data.filter(d => this.isBrushed(d, this.zoomedSelection)));
+        }
+    }
+
     // this method will be called each time the brush is updated.
     brushCircles(event) {
         let { selection } = event;
         const { x, y, k } = this.currentZoom;
 
-        const zoomedSelection = [
+        this.zoomedSelection = [
             [(selection[0][0] - x) / k, (selection[0][1] - y) / k],
             [(selection[1][0] - x) / k, (selection[1][1] - y) / k]
         ];
 
-        this.circles.classed("brushed", d => this.isBrushed(d, zoomedSelection));
-
-        if (this.handlers.brush) {
-            this.handlers.brush(this.data.filter(d => this.isBrushed(d, zoomedSelection)));
-        }
+        this.checkBrush()
     }
 
     on(eventType, handler) {

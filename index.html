@@ -183,11 +183,11 @@
 
         <div class="text-center" style="padding-top: 10px;">
             <input id="brush" type="checkbox"> Brush on (Zoom off)
-            <input type="button" value="Reset" style="margin-left: 50px;" onclick="scatterplotMap.reset()">
+            <input type="button" value="Reset" style="margin-left: 220px;" onclick="mapReset()">
         </div>
 
         <!-- https://medium.com/@predragdavidovic10/native-dual-range-slider-html-css-javascript-91e778134816 -->
-        <div style="width: 500px; margin: 20px auto; align-items: center;">
+        <div style="width: 500px; margin: 30px auto; align-items: center;">
             <div class="sliders_control">
                 <input id="fromSlider" type="range" value="2" min="1" max="9" step="0.1" />
                 <input id="toSlider" type="range" value="8" min="1" max="9" step="0.1" />
@@ -244,6 +244,57 @@
     </main>
 
     <script>
+        function updateScatterplotMap() {
+            let xVar = "longitude";
+            let yVar = "latitude";
+            scatterplotMap.update(filteredData);
+        }
+
+        function updateScatterplot() {
+            let xVar = d3.select("input[type=radio][name=x-encoding]:checked").property("value");
+            let yVar = d3.select("input[type=radio][name=y-encoding]:checked").property("value");
+            let useColor = d3.select("#use-color").property("checked");
+            scatterplotMap.update(xVar, yVar, "variety", useColor);
+        }
+
+        function updateHistogram() {
+            histogram.update(brushedData && brushedData.length > 0 ? brushedData : filteredData, "mag");
+        }
+
+        // function updatePC() {
+        //     pc.update(brushedData && brushedData.length > 0 ? brushedData : data, "variety");
+        // }
+
+        // function updateDataTable() {
+        //     dataTable.update(brushedData && brushedData.length > 0 ? brushedData : data, data.columns)
+        // }
+
+        function filterData() {
+            const [from, to] = getParsed(fromSlider, toSlider);
+            filteredData = data.filter(d => d.mag >= from && d.mag <= to);
+
+            updateScatterplotMap()
+            scatterplotMap.checkBrush()
+            updateHistogram();
+        }
+
+        function mapReset() {
+            fromInput.value = 2
+            toInput.value = 8
+
+            controlFromInput(fromSlider, fromInput, toInput, toSlider)
+            controlToInput(toSlider, fromInput, toInput, toSlider)
+
+            filteredData = data
+
+            scatterplotMap.resetZoomBrush()
+            updateScatterplotMap()
+
+            updateHistogram()
+        }
+
+
+        // https://medium.com/@predragdavidovic10/native-dual-range-slider-html-css-javascript-91e778134816
         const fromSlider = document.querySelector('#fromSlider');
         const toSlider = document.querySelector('#toSlider');
         const fromInput = document.querySelector('#fromInput');
@@ -256,32 +307,8 @@
         fromInput.oninput = () => controlFromInput(fromSlider, fromInput, toInput, toSlider);
         toInput.oninput = () => controlToInput(toSlider, fromInput, toInput, toSlider);
 
-        let data, brushedData, scatterplotMap, histogram, pc, dataTable;
 
-        function updateScatterplotMap() {
-            let xVar = "longitude";
-            let yVar = "latitude";
-            scatterplotMap.update(data);
-        }
-
-        function updateScatterplot() {
-            let xVar = d3.select("input[type=radio][name=x-encoding]:checked").property("value");
-            let yVar = d3.select("input[type=radio][name=y-encoding]:checked").property("value");
-            let useColor = d3.select("#use-color").property("checked");
-            scatterplotMap.update(xVar, yVar, "variety", useColor);
-        }
-
-        function updateHistogram() {
-            histogram.update(brushedData && brushedData.length > 0 ? brushedData : data, "mag");
-        }
-
-        function updatePC() {
-            pc.update(brushedData && brushedData.length > 0 ? brushedData : data, "variety");
-        }
-
-        function updateDataTable() {
-            dataTable.update(brushedData && brushedData.length > 0 ? brushedData : data, data.columns)
-        }
+        let data, filteredData, brushedData, scatterplotMap, histogram, pc, dataTable;
 
         d3.csv("https://raw.githubusercontent.com/zyoa/infovis/main/query.csv")
             .then(csvData => {
@@ -301,11 +328,17 @@
                 });
 
                 data = csvData;
+                filteredData = data
 
                 scatterplotMap = new ScatterplotMap("#scatterplot", "#sc-tooltip", data, 1200, 600);
                 scatterplotMap.initialize();
-                updateScatterplotMap();
-                scatterplotMap.reset();
+                updateScatterplotMap(data);
+                scatterplotMap.resetZoomBrush();
+
+                fromSlider.addEventListener("change", filterData);
+                toSlider.addEventListener("change", filterData);
+                fromInput.addEventListener("change", filterData);
+                toInput.addEventListener("change", filterData);
 
                 // https://codepen.io/yappynoppy/pen/PgzLJM
                 var checkbox = document.querySelector("#brush");
