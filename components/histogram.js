@@ -45,6 +45,7 @@ class Histogram {
 
         this.xScale.domain(categories.concat(d3.max(categories) + 1)).range([0, this.width]);
         this.yScale.domain([0, d3.max(Object.values(counts))]).range([this.height, 0]);
+        this.zScale.domain([6, 2.5]);
 
         this.container.selectAll("rect")
             .data(categories)
@@ -55,7 +56,7 @@ class Histogram {
             .attr("y", d => this.yScale(counts[d]))
             .attr("width", this.xScale.bandwidth())
             .attr("height", d => this.height - this.yScale(counts[d]))
-            .attr("fill", "lightgray")
+            .attr("fill", d => this.zScale(d + 0.5))
 
         this.container.selectAll(".bar-label")
             .data(categories)

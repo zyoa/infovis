@@ -51,9 +51,9 @@ class ScatterplotMap {
             .style("display", "inline")
             .style("font-size", "12px")
             .call(d3.legendColor()
-                .scale(this.zScale)
-                .cells(8)
-                .orient('vertical'))
+            .scale(this.zScale)
+            .cells(8)
+            .orient('vertical'))
 
 
         // https://d3-graph-gallery.com/graph/backgroundmap_basic.html
@@ -177,8 +177,8 @@ class ScatterplotMap {
             .join("circle")
             .on("mouseover", (e, d) => {
                 this.tooltip.select(".tooltip-inner")
-                    .html(`Latitude: ${d.latitude}
-                    Longitude: ${d.longitude}
+                    .html(`Latitude: ${d.latitude}<br />
+                    Longitude: ${d.longitude}<br />
                     Mag: ${d.mag}`);
 
                 Popper.createPopper(e.target, this.tooltip.node(), {

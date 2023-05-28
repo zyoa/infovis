@@ -6,7 +6,6 @@ class DataTable {
     update(data, columns) {
         let table = d3.select(this.id);
 
-
         let rows = table
             .selectAll("tr")
             .data(data)

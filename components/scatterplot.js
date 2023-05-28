@@ -22,30 +22,24 @@ class Scatterplot {
 
         this.xScale = d3.scaleLinear();
         this.yScale = d3.scaleLinear();
-        this.zScale = d3.scaleOrdinal().range(d3.schemeCategory10)
+        this.zScale = d3.scaleSequential(d3.interpolateOranges);
 
         this.svg
             .attr("width", this.width + this.margin.left + this.margin.right)
             .attr("height", this.height + this.margin.top + this.margin.bottom);
 
         this.container.attr("transform", `translate(${this.margin.left}, ${this.margin.top})`);
-
-        this.brush = d3.brush()
-            .extent([[0, 0], [this.width, this.height]])
-            .on("start brush", (event) => {
-                this.brushCircles(event);
-            })
     }
 
-    update(xVar, yVar, colorVar, useColor) {
+    update(xVar, yVar, zVar, data, useColor) {
+        this.data = data;
         this.xVar = xVar;
         this.yVar = yVar;
+        this.zVar = zVar;
 
         this.xScale.domain(d3.extent(this.data, d => d[xVar])).range([0, this.width]);
         this.yScale.domain(d3.extent(this.data, d => d[yVar])).range([this.height, 0]);
-        this.zScale.domain([...new Set(this.data.map(d => d[colorVar]))])
-
-        this.container.call(this.brush);
+        this.zScale.domain([0, d3.max(this.data, d => d[zVar])])
 
         this.circles = this.container.selectAll("circle")
             .data(data)
@@ -74,52 +68,36 @@ class Scatterplot {
 
         this.circles
             .transition()
+            .duration(500)
             .attr("cx", d => this.xScale(d[xVar]))
             .attr("cy", d => this.yScale(d[yVar]))
-            .attr("fill", useColor ? d => this.zScale(d[colorVar]) : "black")
-            .attr("r", 3)
+            .attr("fill", useColor ? d => this.zScale(d[zVar]) : "black")
+            .attr("r", 4)
+            .attr("fill-opacity", 0.8)
 
         this.xAxis
             .attr("transform", `translate(${this.margin.left}, ${this.margin.top + this.height})`)
             .transition()
+            .duration(500)
             .call(d3.axisBottom(this.xScale));
 
         this.yAxis
             .attr("transform", `translate(${this.margin.left}, ${this.margin.top})`)
             .transition()
+            .duration(500)
             .call(d3.axisLeft(this.yScale));
 
         if (useColor) {
             this.legend
+                .attr("transform", `translate(${this.width + this.margin.left + 10}, ${30})`)
                 .style("display", "inline")
-                .style("font-size", ".8em")
-                .attr("transform", `translate(${this.width + this.margin.left + 10}, ${this.height / 2})`)
-                .call(d3.legendColor().scale(this.zScale))
+                .style("font-size", "16px")
+                .call(d3.legendColor()
+                .scale(this.zScale)
+                .orient('vertical'))
         }
         else {
             this.legend.style("display", "none");
         }
-    }
-
-    isBrushed(d, selection) {
-        let [[x0, y0], [x1, y1]] = selection; // destructuring assignment
-        let x = this.xScale(d[this.xVar]);
-        let y = this.yScale(d[this.yVar]);
-
-        return x0 <= x && x <= x1 && y0 <= y && y <= y1;
-    }
-
-    // this method will be called each time the brush is updated.
-    brushCircles(event) {
-        let selection = event.selection;
-
-        this.circles.classed("brushed", d => this.isBrushed(d, selection));
-
-        if (this.handlers.brush)
-            this.handlers.brush(this.data.filter(d => this.isBrushed(d, selection)));
-    }
-
-    on(eventType, handler) {
-        this.handlers[eventType] = handler;
     }
 }

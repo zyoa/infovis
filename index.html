@@ -37,8 +37,11 @@
         
         .my_container {
             width: 1920px;
-            height: 1080px;
             background: white;
+        }
+
+        .form-select {
+            width: 700px
         }
 
         .brushed {
@@ -137,60 +140,6 @@
     </header>
 
     <main class="my_container pb-3">
-        <!-- <div class="row pt-2">
-            <div class="col-1 text-end pe-2"><strong>X:</strong></div>
-            <div class="col-11">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="x-encoding" value="sepal.length" id="x-sl"
-                        checked>
-                    <label class="form-check-label" for="x-sl">SepalLength</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="x-encoding" value="sepal.width" id="x-sw">
-                    <label class="form-check-label" for="x-sw">SepalWidth</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="x-encoding" value="petal.length" id="x-pl">
-                    <label class="form-check-label" for="x-pl">PetalLength</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="x-encoding" value="petal.width" id="x-pw">
-                    <label class="form-check-label" for="x-pw">PetalWidth</label>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-1 text-end pe-2"><strong>Y:</strong></div>
-            <div class="col-11">
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="y-encoding" value="sepal.length" id="y-sl">
-                    <label class="form-check-label" for="y-sl">SepalLength</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="y-encoding" value="sepal.width" id="y-sw"
-                        checked>
-                    <label class="form-check-label" for="y-sw">SepalWidth</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="y-encoding" value="petal.length" id="y-pl">
-                    <label class="form-check-label" for="y-pl">PetalLength</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="y-encoding" value="petal.width" id="y-pw">
-                    <label class="form-check-label" for="y-pw">PetalWidth</label>
-                </div>
-            </div>
-        </div> -->
-
-        <!-- <div class="row">
-            <div class="col offset-1">
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="use-color" checked>
-                    <label class="form-check-label" for="use-color">Color-encode Class</label>
-                </div>
-            </div>
-        </div> -->
-
         <div style="display: flex;">
             <div style="width: 500px; margin-top: 20px; margin-left: 100px; align-items: center;">
                 <div class="form_control">
@@ -217,15 +166,81 @@
                     <input type="button" value="Reset" style="margin-left: 220px;" onclick="mapReset()">
                 </div>
             </div>
-        
         </div>
-        <!-- https://medium.com/@predragdavidovic10/native-dual-range-slider-html-css-javascript-91e778134816 -->
-
 
         <div class="text-center">
             <svg width="1200" height="600" id="scatterplotMap" style="margin-top: -20px;"></svg>
             <svg width="600" height="600" id="histogram" style="margin-left: 30px"></svg>
         </div>
+
+        <div class="tooltip bs-tooltip-top show" id="sc-tooltip-map" role="tooltip" style="display:none">
+            <div class="tooltip-arrow"></div>
+            <div class="tooltip-inner">
+                Some tooltip text!
+            </div>
+        </div>
+
+        <div class="row" style="align-items: center; margin-top: 20px">
+            <div class="col-1 text-end"><strong>X:</strong></div>
+            <div class="col-11">
+                <select class="form-select" name="x-encoding" id="x-encoding">
+                    <option value="mag" selected>magnitude</option>
+                    <option value="magError">magnitude error</option>
+                    <option value="depth">depth</option>
+                    <option value="depthError">depth error</option>
+                    <option value="nst">number of stations</option>
+                    <option value="gap">gap</option>
+                    <option value="dmin">dmin</option>
+                    <option value="rms">rms</option>
+                    <option value="horizontalError">horizontal error</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row" style="align-items: center">
+            <div class="col-1 text-end"><strong>Y:</strong></div>
+            <div class="col-11">
+                <select class="form-select" name="y-encoding" id="y-encoding">
+                    <option value="mag">magnitude</option>
+                    <option value="magError">magnitude error</option>
+                    <option value="depth">depth</option>
+                    <option value="depthError">depth error</option>
+                    <option value="nst" selected>number of stations</option>
+                    <option value="gap">gap</option>
+                    <option value="dmin">dmin</option>
+                    <option value="rms">rms</option>
+                    <option value="horizontalError">horizontal error</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row" style="align-items: center">
+            <div class="col-1 text-end"><strong>Color:</strong></div>
+            <div class="col-11">
+                <select class="form-select" name="z-encoding" id="z-encoding">
+                    <option value="mag">magnitude</option>
+                    <option value="magError">magnitude error</option>
+                    <option value="depth">depth</option>
+                    <option value="depthError">depth error</option>
+                    <option value="nst">number of stations</option>
+                    <option value="gap">gap</option>
+                    <option value="dmin">dmin</option>
+                    <option value="rms" selected>rms</option>
+                    <option value="horizontalError">horizontal error</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col offset-1">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="use-color" checked>
+                    <label class="form-check-label" for="use-color">Color-encode Class</label>
+                </div>
+            </div>
+        </div>
+
+        <svg width="400" height="400" style="margin-left: 200px; margin-top:10px" id="scatterplot"></svg>
 
         <div class="tooltip bs-tooltip-top show" id="sc-tooltip" role="tooltip" style="display:none">
             <div class="tooltip-arrow"></div>
@@ -233,28 +248,34 @@
                 Some tooltip text!
             </div>
         </div>
-        </div>
+        
 
 
-        <!-- <div class="text-center">
-            <svg id="pc">
-            </svg>
-        </div> -->
-
-        <!-- <table class="table table-striped text-center">
+        <table class="table table-striped text-center" style="font-size: 15px; margin-top: 10px">
             <thead>
                 <tr>
-                    <th>Petal Length</th>
-                    <th>Petal Width</th>
-                    <th>Sepal Length</th>
-                    <th>Sepal Width</th>
-                    <th>Variety</th>
+                    <th>time</th>
+                    <th>latitude</th>
+                    <th>longitude</th>
+                    <th>depth</th>
+                    <th>mag</th>
+                    <th>magType</th>
+                    <th>nst</th>
+                    <th>gap</th>
+                    <th>dmin</th>
+                    <th>rms</th>
+                    <th>net</th>
+                    <th>id</th>
+                    <th>place</th>
+                    <th>horizontalError</th>
+                    <th>depthError</th>
+                    <th>magError</th>
+                    <th>magNst</th>
                 </tr>
             </thead>
             <tbody id="data-table">
-
             </tbody>
-        </table> -->
+        </table>
 
     </main>
 
@@ -270,19 +291,22 @@
         }
         
         function updateScatterplot() {
-            let xVar = d3.select("input[type=radio][name=x-encoding]:checked").property("value");
-            let yVar = d3.select("input[type=radio][name=y-encoding]:checked").property("value");
+            let xVar = document.getElementById("x-encoding").value;
+            let yVar = document.getElementById("y-encoding").value;
+            let zVar = document.getElementById("z-encoding").value;
             let useColor = d3.select("#use-color").property("checked");
-            scatterplotMap.update(xVar, yVar, "variety", useColor);
+
+            scatterplot.update(xVar, yVar, zVar, brushedData && brushedData.length > 0 ? brushedData : filteredData, useColor);
         }
 
         // function updatePC() {
         //     pc.update(brushedData && brushedData.length > 0 ? brushedData : data, "variety");
         // }
 
-        // function updateDataTable() {
-        //     dataTable.update(brushedData && brushedData.length > 0 ? brushedData : data, data.columns)
-        // }
+        function updateDataTable() {
+            if(brushedData)
+                dataTable.update(brushedData, data.columns)
+        }
 
         function filterData() {
             const [from, to] = getParsed(fromSlider, toSlider);
@@ -290,7 +314,10 @@
 
             updateScatterplotMap()
             scatterplotMap.checkBrush()
+
             updateHistogram();
+
+            updateScatterplot()
         }
 
         function mapReset() {
@@ -305,6 +332,8 @@
 
             scatterplotMap.resetZoomBrush()
             updateScatterplotMap()
+
+            updateScatterplot()
 
             updateHistogram()
         }
@@ -345,7 +374,7 @@
                 data = csvData;
                 filteredData = data
 
-                scatterplotMap = new ScatterplotMap("#scatterplotMap", "#sc-tooltip", data, 1200, 600);
+                scatterplotMap = new ScatterplotMap("#scatterplotMap", "#sc-tooltip-map", data, 1200, 600);
                 scatterplotMap.initialize();
                 updateScatterplotMap(data);
                 scatterplotMap.resetZoomBrush();
@@ -368,15 +397,19 @@
                 scatterplotMap.on("brush", (brushedItems) => {
                     brushedData = brushedItems;
                     updateHistogram();
+                    updateScatterplot();
                     // updatePC();
-                    // updateDataTable();
+                    updateDataTable();
                 });
 
+                scatterplot = new Scatterplot("#scatterplot", "#sc-tooltip", data, 500, 500);
+                scatterplot.initialize();
+                updateScatterplot();
 
-                d3.selectAll("input[type=radio][name=x-encoding]").on("change", updateScatterplot);
-                d3.selectAll("input[type=radio][name=y-encoding]").on("change", updateScatterplot);
+                d3.selectAll("#x-encoding").on("change", updateScatterplot);
+                d3.selectAll("#y-encoding").on("change", updateScatterplot);
+                d3.selectAll("#z-encoding").on("change", updateScatterplot);
                 d3.selectAll("#use-color").on("change", updateScatterplot);
-
 
                 histogram = new Histogram("#histogram", 450, 550);
                 histogram.initialize();
@@ -387,15 +420,11 @@
 
                 // updatePC();
 
-                // dataTable = new DataTable("#data-table");
+                dataTable = new DataTable("#data-table");
 
-                // updateDataTable();
+                updateDataTable();
             })
     </script>
-
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-        crossorigin="anonymous"></script> -->
 </body>
 
 </html>
