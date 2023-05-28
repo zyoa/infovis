@@ -18,6 +18,7 @@ class Histogram {
 
         this.xScale = d3.scaleBand();
         this.yScale = d3.scaleLinear();
+        this.zScale = d3.scaleSequential(d3.interpolateRdYlBu)
 
         this.svg
             .attr("width", this.width + this.margin.left + this.margin.right)
@@ -65,14 +66,13 @@ class Histogram {
         this.yAxis
             .attr("transform", `translate(${this.margin.left}, ${this.margin.top})`)
             .call(d3.axisLeft(this.yScale));
-        
-        this.svg.selectAll(".histogram-title").remove(); // Remove existing title if any
 
         this.svg.append("text")
             .attr("class", "histogram-title")
             .attr("x", this.width / 2 + this.margin.left)
             .attr("y", this.margin.top + this.height + this.margin.bottom - 5)
             .attr("text-anchor", "middle")
+            .attr("font-size", "13px")
             .text(`${xVar}`);
     }
 }

@@ -106,7 +106,7 @@
         <div class="text-center">
             <div>
                 <input id="brush" type="checkbox"> brush
-                <input type="button" value="Reset" onclick="scatterplotMap.resetZoom()">
+                <input type="button" value="Reset" onclick="scatterplotMap.reset()">
             </div>
 
             <svg width="1200" height="600" id="scatterplot">
@@ -194,7 +194,7 @@
                 scatterplotMap = new ScatterplotMap("#scatterplot", "#sc-tooltip", data, 1200, 600);
                 scatterplotMap.initialize();
                 updateScatterplotMap();
-                scatterplotMap.resetZoom();
+                scatterplotMap.reset();
 
                 // https://codepen.io/yappynoppy/pen/PgzLJM
                 var checkbox = document.querySelector("#brush");
@@ -209,7 +209,7 @@
                 scatterplotMap.on("brush", (brushedItems) => {
                     brushedData = brushedItems;
                     updateHistogram();
-                    updatePC();
+                    // updatePC();
                     // updateDataTable();
                 });
 
@@ -219,7 +219,7 @@
                 // d3.selectAll("#use-color").on("change", updateScatterplot);
 
 
-                histogram = new Histogram("#histogram", 200, 400);
+                histogram = new Histogram("#histogram", 200, 300);
                 histogram.initialize();
                 updateHistogram();
 

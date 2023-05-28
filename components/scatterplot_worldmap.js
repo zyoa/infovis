@@ -24,7 +24,7 @@ class ScatterplotMap {
 
         this.xScale = d3.scaleLinear();
         this.yScale = d3.scaleLinear();
-        this.zScale = d3.scaleSequential(d3.interpolateRdYlBu)
+        this.zScale = d3.scaleSequential(d3.interpolateRdYlBu);
 
         // https://d3-graph-gallery.com/graph/backgroundmap_basic.html
         const projection = d3.geoEquirectangular()
@@ -76,11 +76,13 @@ class ScatterplotMap {
                     exit => exit.remove()
                 )
                 .attr("y1", d => 0.5 + y(d))
-                .attr("y2", d => 0.5 + y(d)));
+                .attr("y2", d => 0.5 + y(d)))
 
         this.zoom = d3.zoom()
             .scaleExtent([1, 100])
             .on("zoom", ({transform}) => {
+                this.currentZoom = transform
+                
                 const zx = transform.rescaleX(this.xScale).interpolate(d3.interpolateRound);
                 const zy = transform.rescaleY(this.yScale).interpolate(d3.interpolateRound);
 
@@ -100,26 +102,40 @@ class ScatterplotMap {
             })
     }
 
-    resetZoom() {
+    reset() {
         this.svg.transition().duration(750).call(
             this.zoom.transform, 
             d3.zoomIdentity
-        );
-        this.svg.selectAll("g.brush").remove();
+        )
+        
+        this.circles.classed("brushed", false)
+        if (this.handlers.brush) {
+            this.handlers.brush(this.data);
+        }
+
+        if (this.brushOn) {
+            this.svg.selectAll("g.brush").remove()
+
+            this.svg.append("g")
+                .attr("class", "brush")
+                .call(this.brush)
+        }
     }
 
     // https://codepen.io/yappynoppy/pen/PgzLJM
     end_brush_tool() {
-        this.svg.selectAll("g.brush").remove();
-        this.svg.call(this.zoom);
+        this.brushOn = false
+        this.svg.selectAll("g.brush").remove()
+        this.svg.call(this.zoom)
     }
     
     start_brush_tool() {
+        this.brushOn = true
         this.svg.append("g")
             .attr("class", "brush")
-            .call(this.brush);
+            .call(this.brush)
         
-        this.svg.on(".zoom", null);
+        this.svg.on(".zoom", null)
     }
 
     update(xVar, yVar, colorVar, useColor) {
@@ -192,11 +208,17 @@ class ScatterplotMap {
     // this method will be called each time the brush is updated.
     brushCircles(event) {
         let {selection} = event;
+        const {x, y, k} = this.currentZoom;
 
-        this.circles.classed("brushed", d => this.isBrushed(d, selection));
-
+        const transformedSelection = [
+            [(selection[0][0] - x) / k, (selection[0][1] - y) / k],
+            [(selection[1][0] - x) / k, (selection[1][1] - y) / k]
+        ];
+        
+        this.circles.classed("brushed", d => this.isBrushed(d, transformedSelection));
+    
         if (this.handlers.brush) {
-            this.handlers.brush(this.data.filter(d => this.isBrushed(d, selection)));
+            this.handlers.brush(this.data.filter(d => this.isBrushed(d, transformedSelection)));
         }
     }
 
