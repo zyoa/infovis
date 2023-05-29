@@ -15,7 +15,6 @@
     <script src="components/scatterplot.js"></script>
     <script src="components/scatterplot_worldmap.js"></script>
     <script src="components/histogram.js"></script>
-    <script src="components/pc.js"></script>
     <script src="components/datatable.js"></script>
     <script src="components/double_slider.js"></script>
 
@@ -297,10 +296,6 @@
             scatterplot.update(xVar, yVar, zVar, brushedData && brushedData.length > 0 ? brushedData : filteredData, useColor);
         }
 
-        // function updatePC() {
-        //     pc.update(brushedData && brushedData.length > 0 ? brushedData : data, "variety");
-        // }
-
         function updateDataTable() {
             if (brushedData && brushedData.length > 0) {
                 dataTable.update(brushedData.slice(0, 100), data.columns);
@@ -404,7 +399,6 @@
                     brushedData = brushedItems;
                     updateHistogram();
                     updateScatterplot();
-                    // updatePC();
                     updateDataTable();
                 });
 
@@ -420,11 +414,6 @@
                 histogram = new Histogram("#histogram", 450, 550);
                 histogram.initialize();
                 updateHistogram();
-
-                // pc = new PC("#pc", data, ["petal.length", "petal.width", "sepal.length", "sepal.width"]);
-                // pc.initialize();
-
-                // updatePC();
 
                 dataTable = new DataTable("#data-table");
 
