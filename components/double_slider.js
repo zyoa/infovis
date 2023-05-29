@@ -1,3 +1,4 @@
+// https://medium.com/@predragdavidovic10/native-dual-range-slider-html-css-javascript-91e778134816
 function controlFromInput(fromSlider, fromInput, toInput, controlSlider) {
     const [from, to] = getParsed(fromInput, toInput);
     fillSlider(fromInput, toInput, "#CCC", "#000", controlSlider);
